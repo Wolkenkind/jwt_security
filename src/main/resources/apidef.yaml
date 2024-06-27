@@ -1,0 +1,186 @@
+openapi: 3.0.0
+info:
+    title: Spring JWT Homework API
+    description: >
+        This is JWT Homework API specification written using OpenAPI specification. It enables creation of a new user and authenticating existing ones. It also provides resources with different security status.
+    contact:
+        email: a-tumanov@yandex.ru
+    version: 1.0.0
+servers:
+    - url: http://localhost
+paths:
+    /public/token/auth:
+      post:
+        summary: Authenticate a user
+        description: Use 'POST' request with username and password sent in body to authenticate yourself and get security tokens
+        operationId: authenticateUser
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthData'
+        responses:
+          '200':
+            $ref: '#/components/responses/TokensResponse'
+          '403':
+            $ref: '#/components/responses/OperationFailResponse'
+          '500':
+            $ref: '#/components/responses/InternalErrorResponse'
+    /public/token/refresh:
+      post:
+        summary: Receive new tokens using refresh token
+        description: Use 'POST' request with refresh token sent in body to receive new security tokens
+        operationId: refreshTokens
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshTokenData'
+        responses:
+          '200':
+            $ref: '#/components/responses/TokensResponse'
+          '403':
+            $ref: '#/components/responses/OperationFailResponse'
+          '500':
+            $ref: '#/components/responses/InternalErrorResponse'
+    /public/newuser:
+      post:
+        summary: Create a new user with specified roles
+        description: Use 'POST' request for creating a new user with a set of specified roles
+        operationId: createUser
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewUser'
+        responses:
+          '202':
+            $ref: '#/components/responses/AcceptedResponse'
+          '409':
+            $ref: '#/components/responses/OperationFailResponse'
+          '500':
+            $ref: '#/components/responses/InternalErrorResponse'
+    /public/info:
+      get: 
+        summary: Get a public resource
+        description: Returns an unprotected resource
+        operationId: getInfo
+        responses: 
+          '200':
+            $ref: '#/components/responses/InfoResponse'
+          '500':
+            $ref: '#/components/responses/InternalErrorResponse'
+    /user/info:
+      get: 
+        summary: Get a 'USER' resource
+        description: Returns resource, accessible only for users with role 'USER'
+        operationId: getUserInfo
+        responses: 
+          '200':
+            $ref: '#/components/responses/InfoResponse'
+          '403':
+            $ref: '#/components/responses/OperationFailResponse'
+          '500':
+            $ref: '#/components/responses/InternalErrorResponse'
+        x-operation-extra-annotation: '@org.springframework.security.access.prepost.PreAuthorize("hasRole(''USER'')")'
+    /moderator/info:
+      get: 
+        summary: Get a 'MODERATOR' resource
+        description: Returns resource, accessible only for users with role 'MODERATOR'
+        operationId: getModeratorInfo
+        responses: 
+          '200':
+            $ref: '#/components/responses/InfoResponse'
+          '403':
+            $ref: '#/components/responses/OperationFailResponse'
+          '500':
+            $ref: '#/components/responses/InternalErrorResponse'
+        x-operation-extra-annotation: '@org.springframework.security.access.prepost.PreAuthorize("hasRole(''MODERATOR'')")'
+    /admin/info:
+      get: 
+        summary: Get a 'ADMIN' resource
+        description: Returns resource, accessible only for users with role 'ADMIN'
+        operationId: getAdminInfo
+        responses: 
+          '200':
+            $ref: '#/components/responses/InfoResponse'
+          '403':
+            $ref: '#/components/responses/OperationFailResponse'
+          '500':
+            $ref: '#/components/responses/InternalErrorResponse'
+        x-operation-extra-annotation: '@org.springframework.security.access.prepost.PreAuthorize("hasRole(''ADMIN'')")'
+components:
+  schemas: 
+    AuthData:
+      type: object
+      properties:
+        username:
+          type: string
+          example: user123
+        password:
+          type: string
+          example: passWord!123
+    RefreshTokenData:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+          example: "aWNoYmlu.ZWlu.dG9rZW4="
+    Info:
+      type: object
+      properties:
+        information:
+          type: string
+    Role:
+      type: string
+      enum:
+        - USER
+        - MODERATOR
+        - ADMIN
+      example: USER
+    NewUser:
+      type: object
+      properties:
+        username:
+          type: string
+          example: user123
+        password:
+          type: string
+          example: passWord!123
+        email:
+          type: string
+          example: mail@server.com
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Role'
+  responses: 
+    InfoResponse:
+      description: successful operation
+      content: 
+        application/json: 
+          schema: 
+            $ref: '#/components/schemas/Info'
+    TokensResponse:
+      description: successful authentication
+      content: 
+        application/json: 
+          schema:
+            type: object
+            properties:
+              token:
+                type: string
+                example: "aWNoYmlu.ZWlu.dG9rZW4="
+              refreshToken:
+                type: string
+                example: "WkdWeWVtaHBiWE41WVE9PQ=="
+    AcceptedResponse:
+      description: request accepted
+    OperationFailResponse:
+      description: operation failure
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Info'
+    InternalErrorResponse:
+      description: internal error
