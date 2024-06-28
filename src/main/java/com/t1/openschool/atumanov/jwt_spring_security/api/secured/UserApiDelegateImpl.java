@@ -14,7 +14,7 @@ import java.util.Optional;
 @Component
 @RequiredArgsConstructor
 public class UserApiDelegateImpl implements UserApiDelegate {
-    private static final String USER_INFO = "This is info with access level 'USER'";
+    public static final String USER_INFO = "This is info with access level 'USER'";
 
     private final NativeWebRequest nativeWebRequest;
 

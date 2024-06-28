@@ -17,10 +17,10 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class PublicApiDelegateImpl implements PublicApiDelegate {
 
-    private static final String RESPONSE_INFO = "PUBLIC INFORMATION: JSON Web Tokens are an open, " +
+    public static final String RESPONSE_INFO = "PUBLIC INFORMATION: JSON Web Tokens are an open, " +
             "industry standard RFC 7519 method for representing claims securely between two parties.";
-    private static final String AUTH_FAIL_INFO = "Failed to authenticate with provided username and password";
-    private static final String REFRESH_FAIL_INFO = "Failed to refresh using provided token";
+    public static final String AUTH_FAIL_INFO = "Failed to authenticate with provided username and password";
+    public static final String REFRESH_FAIL_INFO = "Failed to refresh using provided token";
 
     private final UserService userService;
     private final SecurityService securityService;
@@ -29,8 +29,7 @@ public class PublicApiDelegateImpl implements PublicApiDelegate {
     public ResponseEntity<AuthenticateUser200Response> authenticateUser(AuthData authData) {
         return securityService.processPasswordToken(authData.getUsername(), authData.getPassword())
                 .map(tokenData -> ResponseEntity.ok(new AuthenticateUser200Response(tokenData.getToken(), tokenData.getRefreshToken())))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, AUTH_FAIL_INFO));
-        //TODO: Errorhandling
+                .orElseThrow(() -> new AuthFailedException(AUTH_FAIL_INFO));
     }
 
     @Override
@@ -50,6 +49,6 @@ public class PublicApiDelegateImpl implements PublicApiDelegate {
     public ResponseEntity<AuthenticateUser200Response> refreshTokens(RefreshTokenData refreshTokenData) {
         return securityService.processRefreshToken(refreshTokenData.getRefreshToken())
                 .map(tokenData -> ResponseEntity.ok(new AuthenticateUser200Response(tokenData.getToken(), tokenData.getRefreshToken())))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, REFRESH_FAIL_INFO));
+                .orElseThrow(() -> new AuthFailedException(REFRESH_FAIL_INFO));
     }
 }
