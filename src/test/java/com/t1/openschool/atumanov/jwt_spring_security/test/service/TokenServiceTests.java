@@ -1,5 +1,6 @@
-package com.t1.openschool.atumanov.jwt_spring_security.service;
+package com.t1.openschool.atumanov.jwt_spring_security.test.service;
 
+import com.t1.openschool.atumanov.jwt_spring_security.service.TokenService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.lang.Assert;

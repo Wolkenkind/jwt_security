@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.t1.openschool.atumanov</groupId>
 	<artifactId>jwt_spring_security</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0</version>
 	<name>jwt_spring_security</name>
 	<description>Demo project for Spring Boot</description>
 	<url/>
@@ -18,7 +18,10 @@
 		<license/>
 	</licenses>
 	<developers>
-		<developer/>
+		<developer>
+			<name>Andrei Tumanov</name>
+			<email>a-tumanov@yandex.ru</email>
+		</developer>
 	</developers>
 	<scm>
 		<connection/>
@@ -32,8 +35,8 @@
 		<swagger-version>2.2.22</swagger-version>
 		<jackson-version>2.17.1</jackson-version>
 		<jackson-databind-version>2.17.1</jackson-databind-version>
-		<!--<junit-version>4.13.2</junit-version>-->
 	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -191,7 +194,6 @@
 							<inputSpec>${project.basedir}/src/main/resources/apidef.yaml</inputSpec>
 							<cleanupOutput>true</cleanupOutput>
 							<output>${project.build.directory}/generated-sources</output>
-							<!--<packageName>com.t1.openschool.atumanov.jwt_spring_security</packageName>-->
 							<apiPackage>com.t1.openschool.atumanov.jwt_spring_security.controller</apiPackage>
 							<modelPackage>com.t1.openschool.atumanov.jwt_spring_security.model</modelPackage>
 							<generatorName>spring</generatorName>

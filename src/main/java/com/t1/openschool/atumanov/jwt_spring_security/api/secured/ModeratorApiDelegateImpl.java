@@ -14,7 +14,7 @@ import java.util.Optional;
 @Component
 @RequiredArgsConstructor
 public class ModeratorApiDelegateImpl implements ModeratorApiDelegate {
-    private static final String MODERATOR_INFO = "This is info with access level 'MODERATOR', you're doing good";
+    public static final String MODERATOR_INFO = "This is info with access level 'MODERATOR', you're doing good";
 
     private final NativeWebRequest nativeWebRequest;
 

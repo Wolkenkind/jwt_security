@@ -1,7 +1,8 @@
-package com.t1.openschool.atumanov.jwt_spring_security.service;
+package com.t1.openschool.atumanov.jwt_spring_security.test.service;
 
 import com.t1.openschool.atumanov.jwt_spring_security.model.User;
 import com.t1.openschool.atumanov.jwt_spring_security.repository.UserRepository;
+import com.t1.openschool.atumanov.jwt_spring_security.service.UserService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

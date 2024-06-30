@@ -14,7 +14,7 @@ import java.util.Optional;
 @Component
 @RequiredArgsConstructor
 public class AdminApiDelegateImpl implements AdminApiDelegate {
-    private static final String ADMIN_INFO = "This is info with access level 'ADMIN'. You're like a god now...";
+    public static final String ADMIN_INFO = "This is info with access level 'ADMIN'. You're like a god now...";
 
     private final NativeWebRequest nativeWebRequest;
 

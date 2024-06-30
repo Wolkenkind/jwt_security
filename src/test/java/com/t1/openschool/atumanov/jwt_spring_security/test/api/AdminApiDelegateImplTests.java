@@ -1,22 +1,23 @@
-package com.t1.openschool.atumanov.jwt_spring_security.controller;
+package com.t1.openschool.atumanov.jwt_spring_security.test.api;
 
-import com.t1.openschool.atumanov.jwt_spring_security.api.nonsecured.PublicApiDelegateImpl;
-import com.t1.openschool.atumanov.jwt_spring_security.api.secured.UserApiDelegateImpl;
+import com.t1.openschool.atumanov.jwt_spring_security.api.nonsecured.ApiErrorController;
+import com.t1.openschool.atumanov.jwt_spring_security.api.secured.AdminApiDelegateImpl;
 import com.t1.openschool.atumanov.jwt_spring_security.handler.GeneralResponseEntityExceptionHandler;
-import com.t1.openschool.atumanov.jwt_spring_security.model.*;
-import com.t1.openschool.atumanov.jwt_spring_security.model.dto.TokenData;
+import com.t1.openschool.atumanov.jwt_spring_security.model.AppUserPrincipal;
+import com.t1.openschool.atumanov.jwt_spring_security.model.Info;
+import com.t1.openschool.atumanov.jwt_spring_security.model.Role;
 import com.t1.openschool.atumanov.jwt_spring_security.repository.RefreshTokenRepository;
 import com.t1.openschool.atumanov.jwt_spring_security.repository.UserRepository;
 import com.t1.openschool.atumanov.jwt_spring_security.service.SecurityService;
 import com.t1.openschool.atumanov.jwt_spring_security.service.TokenService;
 import com.t1.openschool.atumanov.jwt_spring_security.service.UserService;
+import com.t1.openschool.atumanov.jwt_spring_security.test.TestConfiguration;
 import io.jsonwebtoken.lang.Assert;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.MockReset;
@@ -27,23 +28,21 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.stream.Stream;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.RANDOM_PORT, classes = {TestConfiguration.class})
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class UserApiDelegateImplTests {
+public class AdminApiDelegateImplTests {
     private static final String USERNAME = "user";
-    private static final String PASSWORD = "pas$$w0rD";
-    private static final String EMAIL = "mail@server.com";
     private static final Long USERID = 3L;
-    private static final List<String> ROLES = Stream.of(Role.USER.name(), Role.MODERATOR.name()).toList();
+    private static final List<String> ROLES = Stream.of(Role.ADMIN.name()).toList();
     private static final String TOKEN = "token";
-    private static final String REFRESH_TOKEN_VALUE = "rtoken";
+    private static final String TOKEN_NO_RIGHTS = "nortoken";
 
     @MockBean
     UserService userService;
@@ -67,23 +66,22 @@ public class UserApiDelegateImplTests {
     @Test
     @Order(1)
     void contextLoads() {
-        apiUrl = "http://localhost:" + serverTestPort + "/user/info";
-
-        //when(userService.createUser(any())).thenReturn(new User(new NewUser(USERNAME, PASSWORD, EMAIL, ROLES)));
+        apiUrl = "http://localhost:" + serverTestPort + "/admin/info";
 
         Principal principal = new AppUserPrincipal(USERID.toString(), USERNAME, ROLES);
         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                 principal,
                 null,
                 ROLES.stream().map(SimpleGrantedAuthority::new).toList());
+        UsernamePasswordAuthenticationToken authNoRights = new UsernamePasswordAuthenticationToken(
+                principal,
+                null,
+                new ArrayList<>());
 
-        when(tokenService.generateToken(USERNAME, USERID, ROLES)).thenReturn(TOKEN);
         when(tokenService.toAuthentication(TOKEN)).thenReturn(auth);
+        when(tokenService.toAuthentication(TOKEN_NO_RIGHTS)).thenReturn(authNoRights);
 
         Assert.notNull(template);
-
-//        when(securityService.processPasswordToken(USERNAME, PASSWORD)).thenReturn(Optional.of(new TokenData(TOKEN, REFRESH_TOKEN_VALUE)));
-//        when(securityService.processRefreshToken(REFRESH_TOKEN_VALUE)).thenReturn(Optional.of(new TokenData(TOKEN, REFRESH_TOKEN_VALUE)));
     }
 
     @Test
@@ -95,7 +93,7 @@ public class UserApiDelegateImplTests {
         ResponseEntity<Info> responseEntity = template.exchange(apiUrl, HttpMethod.GET, entity, Info.class);
 
         assert responseEntity.getStatusCode().equals(HttpStatus.OK);
-        assert responseEntity.getBody().getInformation().equals("Hello, user '" + USERNAME + "'! " + UserApiDelegateImpl.USER_INFO);
+        assert Objects.requireNonNull(responseEntity.getBody()).getInformation().equals("Hello, user '" + USERNAME + "'! " + AdminApiDelegateImpl.ADMIN_INFO);
     }
 
     @Test
@@ -104,8 +102,18 @@ public class UserApiDelegateImplTests {
         ResponseEntity<Info> responseEntity = template.getForEntity(apiUrl, Info.class);
 
         assert responseEntity.getStatusCode().equals(HttpStatus.FORBIDDEN);
-        //Http403ForbiddenEntryPoint
-        //TODO: replace AccessDeniedHandler? add test for role, add test for duplicate user?
-        assert responseEntity.getBody().getInformation().equals(GeneralResponseEntityExceptionHandler.ACCESS_DENIED);
+        assert Objects.requireNonNull(responseEntity.getBody()).getInformation().equals(ApiErrorController.FORBIDDEN);
+    }
+
+    @Test
+    @Order(2)
+    void getUserInfoAuthenticatedInsufficientRightsTest() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(TOKEN_NO_RIGHTS);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+        ResponseEntity<Info> responseEntity = template.exchange(apiUrl, HttpMethod.GET, entity, Info.class);
+
+        assert responseEntity.getStatusCode().equals(HttpStatus.FORBIDDEN);
+        assert Objects.requireNonNull(responseEntity.getBody()).getInformation().equals(GeneralResponseEntityExceptionHandler.ACCESS_DENIED);
     }
 }

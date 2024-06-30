@@ -15,15 +15,17 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 @ControllerAdvice
 public class GeneralResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
-    private static final String DUPLICATE_EMAIL = "User with this email already exists";
+    public static final String DUPLICATE_EMAIL = "User with this email already exists";
     public static final String ACCESS_DENIED = "User doesn't have sufficient rights to access this resource";
     private static final String EXPIRED_TOKEN = "User's token has expired, receive new using refresh token";
     private static final String TOKEN_NOT_FOUND = "User's token is not found, please receive new token";
 
     @ExceptionHandler(value = DataIntegrityViolationException.class)
-    private ResponseEntity<Info> handleDuplicateEmail() {
-        //return handleExceptionInternal(ex, body, new HttpHeaders(), HttpStatus.CONFLICT, request);
-        return new ResponseEntity<>(new Info(DUPLICATE_EMAIL), new HttpHeaders(), HttpStatus.CONFLICT);
+    private ResponseEntity<Info> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        if(ex.getMessage().contains("duplicate key value")) {
+            return new ResponseEntity<>(new Info(DUPLICATE_EMAIL), new HttpHeaders(), HttpStatus.CONFLICT);
+        }
+        throw new RuntimeException("Unexpected data integrity violation exception");
     }
 
     @ExceptionHandler(value = AuthFailedException.class)
