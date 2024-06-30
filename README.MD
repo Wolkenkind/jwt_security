@@ -4,7 +4,7 @@ This project is a homework for [T1 Open School of Java development][1], demonstr
 
 API complies with [OpenAPI Specification][4] v.[3.0.0][5] and the code is generated with help of [OpenAPI Generator plugin for Gradle][6]. The API definition file can be found at: `/scr/main/resources/apidef.yaml`
 
-API documentation is generated using [springdoc-openapi][7] java library and can be accessible locally as [JSON][8] or [Swagger UI][9] after running the application.
+API documentation is generated using [springdoc-openapi][7] java library and is accessible locally as [JSON][8] or [Swagger UI][9] after running the application.
 
 Access rights are checked based on Spring Security system, `@PreAuthorize` annotations secure methods where access requires different roles. Information about user and his roles is contained in JWT token that user gets after authenticating at authentication endpoint `/public/token/auth`. If user is registered in database ([PostgreSQL][10] is used as database in this project) and has entered correct password, access and refresh tokens are granted by the endpoint. Access token is used to access secured part of the application. It has configurable lifetime (which should be rather short for security reasons) and when the token expires, a new one can be received at the refresh endpoint `/public/token/refresh`. Refresh tokens are stored in [Redis][11] database.
 
